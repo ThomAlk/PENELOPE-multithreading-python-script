@@ -1,6 +1,6 @@
 # README: PENELOPE-multithreading-python-script
 
-Ce est conçu pour exécuter en parallèle plusieurs instances du programme `penmain.exe` en divisant une tâche initiale entre différents threads. Chaque instance génère des fichiers de résultats, qui sont ensuite fusionnés en un fichier unique. Ce script à été concu et testé sur Windows 10 et peut ne pas fonctionner sous un autre système d'exploitation.
+Ce est conçu pour exécuter en parallèle plusieurs instances du programme `penmain.exe` en divisant une tâche initiale entre différents threads. Chaque instance génère des fichiers de résultats, qui sont ensuite fusionnés en un fichier unique. Ce script à été concu et testé sur Windows 10. Le code semble fonctionner sur MacOS et Debian. Cependant, il peut être neccessaire de remplacer le "\" de la commande d'execution par "/" afin de s'adapter au formalisme de chaque OS. 
 
 ## Structure du Script
 
