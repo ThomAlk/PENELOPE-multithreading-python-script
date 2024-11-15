@@ -37,6 +37,8 @@ Le fichier d'entrée doit contenir "penmain.exe" ainsi que tout les fichiers né
 
 1.  **Vérifier le nombre de processeur logique du processeur**
     Le raccourci *CTRL + SHIFT + ECHAP* permets d'ouvrir le gestionnaire des tâches. Sous l'onglet "Perfomances" le nombre de processeur logique est affiché. Il est hautement conseillé de ne pas dépasser 75% de cette valeur.
+
+![Nombre de processeur logique](images/threads.png)
     
 2.  **Définissez les paramètres principaux** dans le code avant exécution :
    - `input_file` : Nom du fichier d'entrée (par défaut `input.in`).
@@ -51,6 +53,8 @@ Le fichier d'entrée doit contenir "penmain.exe" ainsi que tout les fichiers né
 - `command` : Commande pour exécuter `penmain.exe`.
 - `directory` : Emplacement du dossier contenant le fichier d'entrée et `penmain.exe`.
 - `threads` : Nombre de threads (ou processus parallèles) à lancer.
+
+  ![Paramètres à modifier](images/A_modifier.png)
 
 ### Fonctionnement du Script
 
@@ -74,10 +78,7 @@ Le code est entièrement commenté et prends en compte la gestion des erreurs. C
 
 ## Remarques
 
-- **Dossiers préexistants** : Le script supprime les dossiers de travail existants avant de créer de nouvelles copies.
-- **Fichier fusionné** : Le fichier fusionné conserve les lignes de commentaire des fichiers originaux et additionne les colonnes spécifiées.
-- **Vérification des erreurs** : Le script affiche les erreurs rencontrées au cours de l'exécution de chaque thread.
-
+Ce script n'est actuellement conçu uniquement pour la dose en profondeur. Toute autre grandeur doit être recombinée manuellement.
 Ce script est conçu pour un usage interne et nécessite une certaine configuration initiale, mais il est optimisé pour gérer des simulations en parallèle tout en centralisant les résultats dans un fichier final.
 
 ## Avertissement Légal
