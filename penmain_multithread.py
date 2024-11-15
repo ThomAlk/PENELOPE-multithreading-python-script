@@ -49,37 +49,45 @@ def modify_nparticles(dir, number_thread, n, input_file):                       
         print(f"Erreur dans la division: {e}")
         return False
 
-def fuse(file_paths, output_file, columns_to_add):      #Fusionne les fichiers produits en 1
+def fuse(file_paths, output_file):      # Fusionne les fichiers produits en 1
     comment_lines = []
     data = []
-    number_commentary=0
-    with open(file_paths[0], 'r') as f:              #Ouvre le fichier du premier thread
+    number_commentary = 0
+    with open(file_paths[0], 'r') as f:              # Ouvre le fichier du premier thread
         lines = f.readlines()
-        
-        #Identifie le commentaire au début de chaque fichier et le garde en mémoire afin de le garder dans le fichier final
+        # Identifie le commentaire au début de chaque fichier et le garde en mémoire afin de le garder dans le fichier final:
         i = 0
         while lines[i].startswith(' #'):
             comment_lines.append(lines[i])
             i += 1
+            
+        # Récupère les données du premier thread:
+        data = [list(map(float, line.strip().split())) for line in lines[i:]]
+        number_commentary = i  # Garde en mémoire le nombre de lignes de commentaires
         
+    column_2_squareSums = [0.0] * len(data)     # Créer une liste pour accumuler les carrés des valeurs de la colonne 2
 
-        data = [list(map(float, line.strip().split())) for line in lines[i:]]   #Récupère les données du premier thread
-        number_commentary=i                                               #Garde en mémoire le nombre de ligne de commentaires
-
-
-    for file_path in file_paths[1:]:     #Récupère les données pour tout les autres threads, en ignorant immédiatement les commentaires
+    for file_path in file_paths[1:]:  # Récupère les données pour tous les autres threads, en ignorant immédiatement les commentaires
         with open(file_path, 'r') as f:
+            lines = f.readlines()
             for idx, line in enumerate(lines[number_commentary:]):
                 columns = list(map(float, line.strip().split()))
-                for col_idx in columns_to_add:
-                    data[idx][col_idx] += columns[col_idx]
+                for col_idx in [1,2]:
+                    if col_idx == 1:  
+                        data[idx][col_idx] += columns[col_idx]          #Additionne les valeurs de dose
+                    elif col_idx == 2:  
+                        column_2_squareSums[idx] += columns[col_idx] ** 2    #Additionne les carrés des écarts types
 
+    for idx in range(len(data)):
+        data[idx][2] = (column_2_squareSums[idx] ** 0.5)             # Calcule la racine carrée de la somme des carrés pour la colonne 2
 
-    with open(output_file, 'w') as f:            #Ecrit le fichier fusioné
-        for line in comment_lines:               #Ecrit les commentaire
-            f.write(line)     
-        for row in data:                         #Ecrit les données sous le formalisme original
+    # Écrit le fichier fusionné:
+    with open(output_file, 'w') as f:
+        for line in comment_lines:  # Écrit les commentaires
+            f.write(line)
+        for row in data:  # Écrit les données sous le formalisme original
             f.write(' '.join(f" {x:.6e}" for x in row) + '\n')
+
 
 def create_directories(num_threads,original_directory, input_file):        #Créé des copies du dossier de base pour chaque thread
     directories = []
@@ -110,7 +118,7 @@ def run_thread(command, original_directory, num_threads, input_file):       #Lan
     for name in files_names:
         file = [os.path.join(dir, name) for dir in directories]               #Récupère la position de chaque fichier 
         output_fused_file = os.path.join(original_directory, name)            #Produit la position du fichier fusioné
-        fuse(file, output_fused_file, columns_to_add=[1, 2])                  #Produit le fichier fusioné
+        fuse(file, output_fused_file)                  #Produit le fichier fusioné
 
 
     return None
