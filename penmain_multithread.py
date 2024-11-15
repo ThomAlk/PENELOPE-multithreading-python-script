@@ -105,10 +105,13 @@ def run_thread(command, original_directory, num_threads, input_file):       #Lan
                 print(f"Dossier '{temp_dir}' s'est terminé sans erreur")              #Message de confirmation
             except Exception as e:
                 print(f"Dossier '{temp_dir}' a rencontré une erreur: {e}")            #Retourne les erreurs
+                
+    files_names=('depth-dose.dat','x-dose.dat','y-dose.dat','z-dose.dat')     #Fusionne les fichiers suivant
+    for name in files_names:
+        file = [os.path.join(dir, name) for dir in directories]               #Récupère la position de chaque fichier 
+        output_fused_file = os.path.join(original_directory, name)            #Produit la position du fichier fusioné
+        fuse(file, output_fused_file, columns_to_add=[1, 2])                  #Produit le fichier fusioné
 
-    depth_dose_files = [os.path.join(dir, 'depth-dose.dat') for dir in directories]   #Récupère la position de chaque fichier de dose en profondeur
-    output_fused_file = os.path.join(original_directory, 'depth-dose.dat')            #Produit la position du fichier fusioné
-    fuse(depth_dose_files, output_fused_file, columns_to_add=[1, 2])                  #Produit le fichier fusioné
 
     return None
 
