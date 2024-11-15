@@ -68,7 +68,7 @@ Le fichier d'entrée doit contenir "penmain.exe" ainsi que tout les fichiers né
    Chaque thread exécute sa propre instance de `penmain.exe`.
 
 4. **Fusion des résultats** :  
-   Après l'exécution, les fichiers `depth-dose.dat` de chaque thread sont fusionnés en un seul fichier dans le dossier d'origine.
+   Après l'exécution, les fichiers `depth-dose.dat`, `x-dose.dat`, `y-dose.dat` et `z-dose.dat` de chaque thread sont fusionnés en fichiers totaux dans le dossier d'origine.
 
 ## Modulabilité et gestion des Erreurs
 
@@ -78,7 +78,7 @@ Le code est entièrement commenté et prends en compte la gestion des erreurs. C
 
 ## Remarques
 
-Ce script n'est actuellement conçu uniquement pour la dose en profondeur. Toute autre grandeur doit être recombinée manuellement.
+Ce script n'est actuellement conçu uniquement pour la dose en profondeur ainsi que selon chaque axe. Toute autre grandeur doit être recombinée manuellement.
 Ce script est conçu pour un usage interne et nécessite une certaine configuration initiale, mais il est optimisé pour gérer des simulations en parallèle tout en centralisant les résultats dans un fichier final.
 
 ## Avertissement Légal
