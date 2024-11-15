@@ -54,7 +54,7 @@ Le fichier d'entrée doit contenir "penmain.exe" ainsi que tout les fichiers né
 - `directory` : Emplacement du dossier contenant le fichier d'entrée et `penmain.exe`.
 - `threads` : Nombre de threads (ou processus parallèles) à lancer.
 
-  ![Paramètres à modifier](images/A_modifier.png)
+  ![Paramètres à modifier](images/A_modifier.PNG)
 
 ### Fonctionnement du Script
 
