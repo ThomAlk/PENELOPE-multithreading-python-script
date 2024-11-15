@@ -116,6 +116,6 @@ def run_thread(command, original_directory, num_threads, input_file):       #Lan
 input_file= r'input.in'                              #Nom du fichier d'entré. Il est conseillé de ne pas le modifier et de changer le nom du fichier directement
 command = r'.\penmain.exe < '+ input_file                         
 directory = r'D:\Session Thom\Desktop\penelope\TP'        ########## A MODIFIER: emplacement du DOSSIER contenant tout les fichiers dont penmain.exe
-threads = 14                                         ########## A MODIFIER: nombre de thread à utiliser. 
+threads = 1                                               ########## A MODIFIER: nombre de thread à utiliser. 
 
 run_thread(command, directory, threads,input_file)                   #Lance le code
