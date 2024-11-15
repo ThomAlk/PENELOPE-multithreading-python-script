@@ -89,6 +89,6 @@ Les utilisateurs sont responsables de s'assurer que l'utilisation de **Penelope*
 
 En utilisant ce script avec **Penelope**, vous reconnaissez que vous respecterez les conditions d'utilisation et de licence de **Penelope** et dégagez de toute responsabilité l'auteur de ce script pour toute utilisation en dehors de ce cadre légal.
 
-Ce script a été conçu et testé sous Windows 22H2 avec un processeur Intel(R) Core(TM) I7-14700F. L'auteur de ce script n'est en aucun cas responsable de son utilisation sur tout autre appareil. 
+Ce script a été conçu et testé sous Python 3.12 et sous Windows 22H2 avec un processeur Intel(R) Core(TM) I7-14700F. L'auteur de ce script n'est en aucun cas responsable de son utilisation sur tout autre appareil. 
 
 
