@@ -97,6 +97,10 @@ Dans le cas d'une erreur non référencée, merci de me contacter.
 Ce script n'est actuellement conçu uniquement pour la dose en profondeur ainsi que selon chaque axe. Toute autre grandeur doit être recombinée manuellement.
 Ce script est conçu pour un usage interne et nécessite une certaine configuration initiale, mais il est optimisé pour gérer des simulations en parallèle tout en centralisant les résultats dans un fichier final.
 
+## Remerciement 
+
+Merci à Daniil Kirdyashkin pour son aide à la correction des erreurs.
+
 ## Avertissement Légal
 
 **Penelope** est un logiciel tiers soumis aux droits d'auteur de son propriétaire original, et n'appartient ni n'est affilié à l'auteur de ce script ou aux collaborateurs de ce projet. Ce script est uniquement conçu pour faciliter l'exécution et le traitement des données produites par **Penelope** dans un contexte académique ou de recherche. Toute utilisation de **Penelope** dans le cadre de ce script doit être conforme aux termes de licence et aux droits d'auteur du propriétaire original du logiciel.
