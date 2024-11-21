@@ -21,6 +21,8 @@ Le script est organisé en plusieurs fonctions :
 5. **`run_thread(command, original_directory, num_threads, input_file)`**  
    Cette fonction principale configure les threads, crée les copies de dossiers nécessaires, exécute `penmain.exe` pour chaque thread, puis fusionne les fichiers de résultats des différents threads dans un fichier de sortie unique.
 
+---
+
 ## Utilisation du Script
 
 ### Prérequis
@@ -70,9 +72,23 @@ Le fichier d'entrée doit contenir "penmain.exe" ainsi que tout les fichiers né
 4. **Fusion des résultats** :  
    Après l'exécution, les fichiers `depth-dose.dat`, `x-dose.dat`, `y-dose.dat` et `z-dose.dat` de chaque thread sont fusionnés en fichiers totaux dans le dossier d'origine.
 
-## Modulabilité et gestion des Erreurs
+## Génération des fichiers fusionés
 
-Le code est entièrement commenté et prends en compte la gestion des erreurs. Ces dernières peuvent être facilement retrouvées dans la documentation. Dans le cas d'une erreur propre au script, merci de me contacter
+La fusion des fichiers se fait une fois que toute les simulations ont abouties. De ce fait, une intérruption du script ne produira pas de fusion de fichiers, qui doivent être récupérés et fusionnés à la main.
+
+## Reprise de simulation
+
+Le code prends en charge la reprise d'une simulation basée sur le système de **Penelope**. Pour fonctionner, les dossiers produits lors de la dernière simulation doivent être placé dans le même dossier que le dossier original, et ne doivent pas être renommés.
+
+## Erreurs et limites du script
+
+Lors de l'interuption du script, une erreur à été soulevée quant à l'écriture des fichiers "dump.dat", néccessaire à la reprise de l'exécution par **Penelope**. Il est fortement conseillé d'interrompre le script juste après une vague de résultat afin de ne pas interférer avec l'écriture des fichiers "dump.dat".
+
+La statistique produite par ce scripts semble être de bien moins bonne qualité qu'une éxecution complète sans passer par le script pour un nombre de particule égale. Ce problème restant à être investigué, il est déconseillé d'utiliser ce script dans le cas où une grande précision est néccéssaire.
+
+Tout les fichiers ne sont actuellement pas recombinés. L'ajout des derniers fichiers produits devrait arriver sous peu.
+
+Dans le cas d'une erreur non référencée, merci de me contacter.
 
 ---
 
