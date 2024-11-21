@@ -23,7 +23,7 @@ def run_penmain(command, directory, number):                   #Lance Penmain.ex
         print(f"Error: {e}")
         return None
 
-def modify_nparticles(dir, number_thread, n, input_file):                       #Segmente le nombre de particules à simuler entre chaque thread
+def modify_nparticles(dir, number_thread, input_file):                       #Segmente le nombre de particules à simuler entre chaque thread
     try:
         file_path = os.path.join(dir, input_file)                  #Récupère l'emplacement du fichier d'entrée
         with open(file_path, 'r') as file:                         #Ouvre le fichier d'input
@@ -49,59 +49,71 @@ def modify_nparticles(dir, number_thread, n, input_file):                       
         print(f"Erreur dans la division: {e}")
         return False
 
-def fuse(file_paths, output_file):      # Fusionne les fichiers produits en 1
+def fuse(file_paths, output_file, columns_to_add):      #Fusionne les fichiers produits en 1
     comment_lines = []
     data = []
-    number_commentary = 0
-    with open(file_paths[0], 'r') as f:              # Ouvre le fichier du premier thread
+    number_commentary=0
+    with open(file_paths[0], 'r') as f:              #Ouvre le fichier du premier thread
         lines = f.readlines()
-        # Identifie le commentaire au début de chaque fichier et le garde en mémoire afin de le garder dans le fichier final:
+        
+        #Identifie le commentaire au début de chaque fichier et le garde en mémoire afin de le garder dans le fichier final
         i = 0
         while lines[i].startswith(' #'):
             comment_lines.append(lines[i])
             i += 1
-            
-        # Récupère les données du premier thread:
-        data = [list(map(float, line.strip().split())) for line in lines[i:]]
-        number_commentary = i  # Garde en mémoire le nombre de lignes de commentaires
         
-    column_2_squareSums = [0.0] * len(data)     # Créer une liste pour accumuler les carrés des valeurs de la colonne 2
 
-    for file_path in file_paths[1:]:  # Récupère les données pour tous les autres threads, en ignorant immédiatement les commentaires
+        data = [list(map(float, line.strip().split())) for line in lines[i:]]   #Récupère les données du premier thread
+        number_commentary=i                                               #Garde en mémoire le nombre de ligne de commentaires
+
+
+    for file_path in file_paths[1:]:     #Récupère les données pour tout les autres threads, en ignorant immédiatement les commentaires
         with open(file_path, 'r') as f:
-            lines = f.readlines()
             for idx, line in enumerate(lines[number_commentary:]):
                 columns = list(map(float, line.strip().split()))
-                for col_idx in [1,2]:
-                    if col_idx == 1:  
-                        data[idx][col_idx] += columns[col_idx]          #Additionne les valeurs de dose
-                    elif col_idx == 2:  
-                        column_2_squareSums[idx] += columns[col_idx] ** 2    #Additionne les carrés des écarts types
+                for col_idx in columns_to_add:
+                    data[idx][col_idx] += columns[col_idx]
 
-    for idx in range(len(data)):
-        data[idx][2] = (column_2_squareSums[idx] ** 0.5)             # Calcule la racine carrée de la somme des carrés pour la colonne 2
 
-    # Écrit le fichier fusionné:
-    with open(output_file, 'w') as f:
-        for line in comment_lines:  # Écrit les commentaires
-            f.write(line)
-        for row in data:  # Écrit les données sous le formalisme original
+    with open(output_file, 'w') as f:            #Ecrit le fichier fusioné
+        for line in comment_lines:               #Ecrit les commentaire
+            f.write(line)     
+        for row in data:                         #Ecrit les données sous le formalisme original
             f.write(' '.join(f" {x:.6e}" for x in row) + '\n')
 
-
-def create_directories(num_threads,original_directory, input_file):        #Créé des copies du dossier de base pour chaque thread
+def create_directories(num_threads, original_directory, input_file):
     directories = []
-    for i in range(num_threads):
-        dir = f"{original_directory}_copy_{i+1}"                #Crée le nom du dossier
+    dirs = [f"{original_directory}_copy_{i+1}" for i in range(num_threads)]           #Produit les noms de fichiers attendus
 
-        if os.path.exists(dir):                                         #Vérifie si des dossiers existes déjà. Si c'est le cas, les supprimes
-            print(f"Le répertoire {dir} existe déjà. Suppression...")
-            shutil.rmtree(dir)
+    dirs_found = [dir for dir in dirs if os.path.exists(dir)]                   #Produit la liste des fichiers trouvés
+    
 
-        shutil.copytree(original_directory, dir)                 #Crée les dossiers étant des copies du dossier d'origine
-        directories.append(dir)                                  
-        modify_nparticles(dir, num_threads, i, input_file)                  #Lance la fonction de modification du nombre de particules
+    #Le bloc suivant s'occupe de prendre en entrée le choix de l'utilisateur si des fichiers existant ont été trouvés
+    if dirs_found:                                                         
+        print("Les fichiers suivants existent déjà:")
+        for dir in dirs_found:
+            print(f"  - {dir}")
+        user_input = input("Voulez-vous continuer la simulation existante ? (Y/n) ").strip().lower()
+        print(user_input)
+        
+        if user_input == "y" or user_input=='':
+            print("Reprise de la simulation...")
+            return dirs                                #Sort immédiatement de la fonction si la simulation est poursuivie
+    
+        elif user_input == "n":
+            print("Suppression des fichiers existant...")
+            for dir in dirs_found:
+                shutil.rmtree(dir)
+        else:
+            raise ValueError("Entrée invalide. Entrez 'y' ou entrée pour reprendre la simulation, ou 'n' pour supprimer les fichiers ")
+    
+    for dir in dirs:
+        shutil.copytree(original_directory, dir)         #Copie le dossier original  
+        directories.append(dir)
+        modify_nparticles(dir, num_threads, input_file)  #Lance la fonction chargée de modifier le nombre de particule pour chaque dossier
+    
     return directories
+
 
 def run_thread(command, original_directory, num_threads, input_file):       #Lance la même tache sur tout les threads
     directories= create_directories(num_threads,original_directory, input_file)             #Récupère le nom des fichiers copiées
@@ -113,13 +125,12 @@ def run_thread(command, original_directory, num_threads, input_file):       #Lan
                 print(f"Dossier '{temp_dir}' s'est terminé sans erreur")              #Message de confirmation
             except Exception as e:
                 print(f"Dossier '{temp_dir}' a rencontré une erreur: {e}")            #Retourne les erreurs
-                
-    files_names=('depth-dose.dat','x-dose.dat','y-dose.dat','z-dose.dat')     #Fusionne les fichiers suivant
+
+    files_names=('depth-dose.dat','x-dose.dat','y-dose.dat','z-dose.dat')
     for name in files_names:
         file = [os.path.join(dir, name) for dir in directories]               #Récupère la position de chaque fichier 
         output_fused_file = os.path.join(original_directory, name)            #Produit la position du fichier fusioné
-        fuse(file, output_fused_file)                  #Produit le fichier fusioné
-
+        fuse(file, output_fused_file, columns_to_add=[1, 2])                  #Produit le fichier fusioné
 
     return None
 
@@ -127,6 +138,6 @@ def run_thread(command, original_directory, num_threads, input_file):       #Lan
 input_file= r'input.in'                              #Nom du fichier d'entré. Il est conseillé de ne pas le modifier et de changer le nom du fichier directement
 command = r'.\penmain.exe < '+ input_file                         
 directory = r'D:\Session Thom\Desktop\penelope\TP'        ########## A MODIFIER: emplacement du DOSSIER contenant tout les fichiers dont penmain.exe
-threads = 1                                               ########## A MODIFIER: nombre de thread à utiliser. 
+threads = 1                                         ########## A MODIFIER: nombre de thread à utiliser. 
 
-run_thread(command, directory, threads,input_file)                   #Lance le code
+run_thread(command, directory, threads, input_file)                   #Lance le code
