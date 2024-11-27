@@ -3,6 +3,7 @@ import os
 import concurrent.futures
 import shutil
 from pathlib import Path
+import re
 
 def run_penmain(command, directory, number):                   #Lance Penmain.exe
     try:
@@ -42,7 +43,8 @@ def modify_nparticles(dir, number_thread, input_file):                       #Se
         with open(file_path, 'w') as file:                          #Réécrit le fichier avec la nouvelle valeur
             file.writelines(lines)
 
-        print(f"Division du nombre de particule du thread {n} réussi.")
+        thread_n = re.search(r'_(\d+)$', dir) # Trouve le numéro du sous-dossier actuel
+        print(f"Division du nombre de particule du thread {thread_n.group(1)} réussi.") # Remplacement de "n" qui n'existait pas, par "thread_n" 
         return True
 
     except Exception as e:                                           #Retourne si une erreur à eu lieu
