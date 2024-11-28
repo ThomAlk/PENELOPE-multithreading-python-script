@@ -23,7 +23,7 @@ def run_penmain(command, directory, number):                   #Lance Penmain.ex
         print(f"Error: {e}")
         return None
 
-def modify_nparticles(dir, number_thread, input_file):                       #Segmente le nombre de particules à simuler entre chaque thread
+def modify_nparticles(dir, number_thread, input_file, n):                       #Segmente le nombre de particules à simuler entre chaque thread
     try:
         file_path = os.path.join(dir, input_file)                  #Récupère l'emplacement du fichier d'entrée
         with open(file_path, 'r') as file:                         #Ouvre le fichier d'input
@@ -107,10 +107,10 @@ def create_directories(num_threads, original_directory, input_file):
         else:
             raise ValueError("Entrée invalide. Entrez 'y' ou entrée pour reprendre la simulation, ou 'n' pour supprimer les fichiers ")
     
-    for dir in dirs:
+    for (dir,n) in zip(dirs,len(dirs)):
         shutil.copytree(original_directory, dir)         #Copie le dossier original  
         directories.append(dir)
-        modify_nparticles(dir, num_threads, input_file)  #Lance la fonction chargée de modifier le nombre de particule pour chaque dossier
+        modify_nparticles(dir, num_threads, input_file,n)  #Lance la fonction chargée de modifier le nombre de particule pour chaque dossier
     
     return directories
 
