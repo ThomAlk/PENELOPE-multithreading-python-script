@@ -30,11 +30,14 @@ def modify_nparticles(dir, number_thread, input_file, n):                       
             lines = file.readlines()
 
         for i, line in enumerate(lines):
+            if line.startswith("RSEED"):                            #Récupère la ligne de graine
+                lines[i] = f"RSEED  -{n+1} {n+1}\n"                   #Change la valeur des graines
             if line.startswith("NSIMSH"):                           #Récupère la ligne du nombre de particules
                 initial_number = int(float(line[7:10]))             #Récupère le nombre de particules
                 number_by_thread = initial_number / number_thread   #Divise le nombre de particules par le nombre de thread utilisé
                 lines[i] = f"NSIMSH {number_by_thread:.3e}\n"       #Change la valeur du nombre de particules
                 break
+
         else:
             print("Ligne de particule non trouvée (Vérifier le dossier d'initialisation)")                 #Retourne l'erreur en cas de ligne non présente
             return False
@@ -49,37 +52,40 @@ def modify_nparticles(dir, number_thread, input_file, n):                       
         print(f"Erreur dans la division: {e}")
         return False
 
-def fuse(file_paths, output_file, columns_to_add):      #Fusionne les fichiers produits en 1
+def fuse(file_paths, output_file, num_threads ,columns_to_add):  # Fusionne les fichiers produits en 1
     comment_lines = []
     data = []
-    number_commentary=0
-    with open(file_paths[0], 'r') as f:              #Ouvre le fichier du premier thread
-        lines = f.readlines()
-        
-        #Identifie le commentaire au début de chaque fichier et le garde en mémoire afin de le garder dans le fichier final
-        i = 0
-        while lines[i].startswith(' #'):
-            comment_lines.append(lines[i])
-            i += 1
-        
+    number_commentary = 0
 
-        data = [list(map(float, line.strip().split())) for line in lines[i:]]   #Récupère les données du premier thread
-        number_commentary=i                                               #Garde en mémoire le nombre de ligne de commentaires
+    for file_index, file_path in enumerate(file_paths):
+        if not os.path.exists(file_path):
+            print(f"Warning: {file_path} n'existe pas.")
+            continue
 
-
-    for file_path in file_paths[1:]:     #Récupère les données pour tout les autres threads, en ignorant immédiatement les commentaires
         with open(file_path, 'r') as f:
-            for idx, line in enumerate(lines[number_commentary:]):
-                columns = list(map(float, line.strip().split()))
-                for col_idx in columns_to_add:
-                    data[idx][col_idx] += columns[col_idx]
+            lines = f.readlines()
+            if file_index == 0: 
+                # Identifie le commentaire au début de chaque fichier et le garde en mémoire afin de le garder dans le fichier final
+                i = 0
+                while lines[i].startswith(' #'):
+                    comment_lines.append(lines[i])
+                    i += 1
+
+                # Récupère les données du premier fichier
+                data = [list(map(float, line.strip().split())) for line in lines[i:]]
+                number_commentary = i  # Garde en mémoire le nombre de lignes de commentaires
+            else:
+                for idx, line in enumerate(lines[number_commentary:]):  # Ignore les commentaires
+                    columns = list(map(float, line.strip().split()))
+                    for col_idx in columns_to_add:
+                        data[idx][col_idx] += columns[col_idx]
 
 
-    with open(output_file, 'w') as f:            #Ecrit le fichier fusioné
-        for line in comment_lines:               #Ecrit les commentaire
-            f.write(line)     
-        for row in data:                         #Ecrit les données sous le formalisme original
-            f.write(' '.join(f" {x:.6e}" for x in row) + '\n')
+    with open(output_file, 'w') as f:  # Ecrit le fichier fusioné
+        for line in comment_lines:  # Ecrit les commentaires
+            f.write(line)
+        for row in data:  # Ecrit les données sous le formalisme original
+            f.write(' '.join(f" {x/num_threads:.6e}" for x in row) + '\n')
 
 def create_directories(num_threads, original_directory, input_file):
     directories = []
@@ -107,13 +113,12 @@ def create_directories(num_threads, original_directory, input_file):
         else:
             raise ValueError("Entrée invalide. Entrez 'y' ou entrée pour reprendre la simulation, ou 'n' pour supprimer les fichiers ")
     
-    for (dir,n) in zip(dirs,len(dirs)):
+    for (dir,n) in zip(dirs,range(len(dirs))):
         shutil.copytree(original_directory, dir)         #Copie le dossier original  
         directories.append(dir)
         modify_nparticles(dir, num_threads, input_file,n)  #Lance la fonction chargée de modifier le nombre de particule pour chaque dossier
     
     return directories
-
 
 def run_thread(command, original_directory, num_threads, input_file):       #Lance la même tache sur tout les threads
     directories= create_directories(num_threads,original_directory, input_file)             #Récupère le nom des fichiers copiées
@@ -130,7 +135,7 @@ def run_thread(command, original_directory, num_threads, input_file):       #Lan
     for name in files_names:
         file = [os.path.join(dir, name) for dir in directories]               #Récupère la position de chaque fichier 
         output_fused_file = os.path.join(original_directory, name)            #Produit la position du fichier fusioné
-        fuse(file, output_fused_file, columns_to_add=[1, 2])                  #Produit le fichier fusioné
+        fuse(file, output_fused_file, num_threads ,columns_to_add=[1, 2])                  #Produit le fichier fusioné
 
     return None
 
