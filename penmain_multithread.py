@@ -52,19 +52,24 @@ def modify_nparticles(dir, number_thread, input_file, n):                       
         print(f"Erreur dans la division: {e}")
         return False
 
-def fuse(file_paths, output_file, num_threads ,columns_to_add):  # Fusionne les fichiers produits en 1
+import os
+
+def fuse(file_paths, output_file):  # Fusionne les fichiers produits en 1
     comment_lines = []
     data = []
     number_commentary = 0
+    global threads
+    column_2_squareSums = [0.0] * len(data)
 
     for file_index, file_path in enumerate(file_paths):
+        # Check if the file exists, skip if it doesn't
         if not os.path.exists(file_path):
-            print(f"Warning: {file_path} n'existe pas.")
+            print(f"Warning: {file_path} n'existe pas. Skipping.")
             continue
 
         with open(file_path, 'r') as f:
             lines = f.readlines()
-            if file_index == 0: 
+            if file_index == 0:  #Premier fichier
                 # Identifie le commentaire au début de chaque fichier et le garde en mémoire afin de le garder dans le fichier final
                 i = 0
                 while lines[i].startswith(' #'):
@@ -74,18 +79,28 @@ def fuse(file_paths, output_file, num_threads ,columns_to_add):  # Fusionne les 
                 # Récupère les données du premier fichier
                 data = [list(map(float, line.strip().split())) for line in lines[i:]]
                 number_commentary = i  # Garde en mémoire le nombre de lignes de commentaires
-            else:
-                for idx, line in enumerate(lines[number_commentary:]):  # Ignore les commentaires
+
+
+            else:  #Fichiers suivant
+                for idx, line in enumerate(lines[number_commentary:]):
                     columns = list(map(float, line.strip().split()))
-                    for col_idx in columns_to_add:
-                        data[idx][col_idx] += columns[col_idx]
+                    for col_idx in [1, 2]:
+                        if col_idx == 1:
+                            data[idx][col_idx] += columns[col_idx] / threads  # Additionne les valeurs de dose
+                        elif col_idx == 2:
+                            column_2_squareSums[idx] += columns[col_idx] ** 2  # Additionne les carrés des écarts types
 
 
-    with open(output_file, 'w') as f:  # Ecrit le fichier fusioné
-        for line in comment_lines:  # Ecrit les commentaires
+    for idx in range(len(data)):
+        data[idx][2] = (column_2_squareSums[idx] ** 0.5)  # Calcule la racine carrée de la somme des carrés pour la colonne 2
+
+    # Écrit le fichier fusionné:
+    with open(output_file, 'w') as f:
+        for line in comment_lines:  # Écrit les commentaires
             f.write(line)
-        for row in data:  # Ecrit les données sous le formalisme original
-            f.write(' '.join(f" {x/num_threads:.6e}" for x in row) + '\n')
+        for row in data:  # Écrit les données sous le formalisme original
+            f.write(' '.join(f" {x:.6e}" for x in row) + '\n')
+
 
 def create_directories(num_threads, original_directory, input_file):
     directories = []
@@ -135,7 +150,7 @@ def run_thread(command, original_directory, num_threads, input_file):       #Lan
     for name in files_names:
         file = [os.path.join(dir, name) for dir in directories]               #Récupère la position de chaque fichier 
         output_fused_file = os.path.join(original_directory, name)            #Produit la position du fichier fusioné
-        fuse(file, output_fused_file, num_threads ,columns_to_add=[1, 2])                  #Produit le fichier fusioné
+        fuse(file, output_fused_file)                  #Produit le fichier fusioné
 
     return None
 
@@ -143,6 +158,6 @@ def run_thread(command, original_directory, num_threads, input_file):       #Lan
 input_file= r'input.in'                              #Nom du fichier d'entré. Il est conseillé de ne pas le modifier et de changer le nom du fichier directement
 command = r'.\penmain.exe < '+ input_file                         
 directory = r'D:\Session Thom\Desktop\penelope\TP'        ########## A MODIFIER: emplacement du DOSSIER contenant tout les fichiers dont penmain.exe
-threads = 1                                         ########## A MODIFIER: nombre de thread à utiliser. 
+threads = 14                                         ########## A MODIFIER: nombre de thread à utiliser. 
 
 run_thread(command, directory, threads, input_file)                   #Lance le code
